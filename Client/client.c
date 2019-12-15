@@ -128,7 +128,6 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
         strcpy(copy, command);
         fflush(stdin);
 
-        signal(SIGINT, SIG_IGN);
         if (!strcmp(command, "LIST")) {
             write(fd_tcp, "LIST", BUFFER);
             get_list(fd_tcp);
@@ -151,8 +150,11 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
                         decrypt(file_path, nonce);
                         print_stats(stats);
                     }
-
                 } else if (!strcmp(params[0], "UDP")) {
+
+
+
+
                     stats = get_file(file_path, params[2], fd_udp);
                     print_stats(stats);
                 } else {

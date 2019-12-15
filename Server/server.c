@@ -219,6 +219,9 @@ void *new_client(void *arg) {
 
             printf("Client closed connection\n");
             printf("Active Clients: %d \n", active_clients);
+        } else {
+            // Kill server if something unexpected occurs
+            sig_handler(SIGINT);
         }
     }
 

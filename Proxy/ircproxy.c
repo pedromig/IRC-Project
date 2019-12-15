@@ -16,13 +16,15 @@ int losses;
 int save;
 pthread_t *clients, proxy_thread;
 pthread_mutex_t client_temination_mutex = PTHREAD_MUTEX_INITIALIZER;
+show_t *info;
 
 int main(int argc, char *argv[]) {
-    int done = 0;
+    int done = 0, i;
     int temp;
     char *token, delimiter[2] = " ";
     char command[BUFFER];
-    struct sockaddr client_address;
+    char buffer[BUFFER];
+    struct sockaddr_in client_address;
     struct sockaddr_in proxy_address;
     proxy_settings_t settings;
 
@@ -38,6 +40,7 @@ int main(int argc, char *argv[]) {
 
     clients = (pthread_t *) calloc(NUM_CLIENTS_MAX, sizeof(pthread_t));
     descriptors = (int *) calloc(NUM_CLIENTS_MAX, sizeof(int));
+    info = (show_t *) calloc(NUM_CLIENTS_MAX, sizeof(show_t));
 
     if ((proxy_fd_tcp = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
         printf("Error creating the proxy tcp socket\n");
@@ -124,6 +127,21 @@ int main(int argc, char *argv[]) {
                 printf("Invalid Command!!\n");
             }
 
+        } else if (!strcmp(command, "SHOW")) {
+            printf("<----------------- INFO ----------------->\n");
+            for (i = 0; i < NUM_CLIENTS_MAX; i++) {
+                if (clients[i] != STATE_FREE) {
+                    printf("\nCLIENT [%d]\n", i + 1);
+                    inet_ntop(AF_INET, &info[i].client_address, buffer, sizeof(info[i].client_address));
+                    printf("Client Address: %s\n", buffer);
+                    printf("Client Port: %d\n", info[i].client_address.sin_port);
+
+                    inet_ntop(AF_INET, &info[i].server_address, buffer, sizeof(info[i].server_address));
+                    printf("Server Address: %s\n", buffer);
+                    printf("Server Port: %d\n", info[i].server_address.sin_port);
+                }
+            }
+            printf("\n<---------------------------------------->\n");
         } else if (!strcmp(command, "QUIT")) {
             sig_handler(SIGINT);
             done = 1;
@@ -163,7 +181,7 @@ proxy_settings_t get_settings(char *argv[]) {
 
 
 void *proxy(void *arg) {
-    struct sockaddr client_address = *((struct sockaddr *) arg);
+    struct sockaddr_in client_address = *((struct sockaddr_in *) arg);
     int client_fd, error, nread = 0, i, found = 0;
     char buffer[BUFFER];
     socklen_t client_address_size;
@@ -185,6 +203,7 @@ void *proxy(void *arg) {
             for (i = 0, found = 0; i < NUM_CLIENTS_MAX && !found; i++) {
                 if (clients[i] == STATE_FREE) {
                     client_thread->thread_index = i;
+                    info[i].client_address = client_address;
                     if (pthread_create(&clients[i], NULL, new_client, client_thread)) {
                         printf("Client Thread creation failed\n");
                         exit(0);
@@ -229,6 +248,7 @@ void *new_client(void *arg) {
             close(server_fd);
             cleanup(client);
         }
+        info[client.thread_index].server_address = server_address;
 
         write(server_fd, "TCP", BUFFER);
         nread = read(server_fd, buffer, BUFFER);
@@ -256,22 +276,27 @@ void *new_client(void *arg) {
                 write(server_fd, buffer, BUFFER);
                 params = parseCommand(buffer);
 
+                if(!strcmp(params[0],"TCP")){
+                    read(server_fd, buffer, BUFFER);
+                    buffer[nread] = '\0';
 
-                read(server_fd, buffer, BUFFER);
-                buffer[nread] = '\0';
+                    write(client.client_fd, buffer, BUFFER);
 
-
-                write(client.client_fd, buffer, BUFFER);
-
-                if (!strcmp(buffer, "FOUND")) {
-                    if(!strcmp(params[1],"NOR")){
-                        transmit_file(params[2], server_fd, client.client_fd);
-                    } else if( !strcmp(params[1],"ENC")){
-                        read(server_fd,buffer,sizeof(nonce));
-                        write(client.client_fd,buffer,sizeof(nonce));
-                        transmit_file(params[2], server_fd, client.client_fd);
+                    if (!strcmp(buffer, "FOUND")) {
+                        if (!strcmp(params[1], "NOR")) {
+                            transmit_file(params[2], server_fd, client.client_fd);
+                        } else if (!strcmp(params[1], "ENC")) {
+                            read(server_fd, buffer, sizeof(nonce));
+                            write(client.client_fd, buffer, sizeof(nonce));
+                            transmit_file(params[2], server_fd, client.client_fd);
+                        }
                     }
                 }
+
+                if(!strcmp(params[0],"UDP")){
+                    udp_transfer();
+                }
+
                 free_double_ptr(params, 3);
             } else if (!strcmp(buffer, "QUIT")) {
                 write(server_fd, "QUIT", BUFFER);
@@ -286,13 +311,10 @@ void *new_client(void *arg) {
             }
         }
     } else if (!strcmp(buffer, "UDP")) {
-
-        if ((server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP)) == -1) {
-            printf("Error creating the tcp client socket\n");
-            exit(0);
-        }
-        printf("%d\n", server_fd);
-
+        printf("NOT IMPLEMENTED: \n");
+        printf("Nota: como protocolo a indicar ao cliente poderá "
+               "considerar apenas o TCP (a utilizar na ligação inicial\n"
+               "entre o cliente e o proxy, bem como entre o proxy e o servidor).");
     } else {
         printf("Wrong Protocol\n");
     }
@@ -362,6 +384,11 @@ void transmit_dir(int server_fd, int client_fd) {
     }
 }
 
+
+void udp_transfer(){
+
+}
+
 void sig_handler(int signo) {
     signal(SIGINT, SIG_IGN);
     printf("\nProxy Shutdown...\n");
@@ -381,6 +408,7 @@ void sig_handler(int signo) {
     pthread_mutex_destroy(&client_temination_mutex);
     free(clients);
     free(descriptors);
+    free(info);
     close(proxy_fd_tcp);
     close(proxy_fd_udp);
     exit(0);

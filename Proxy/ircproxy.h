@@ -20,6 +20,11 @@ typedef struct ProxyClientThread {
     int client_fd;
 } pclient_thread_t;
 
+typedef struct ShowInfoStructure {
+    struct sockaddr_in client_address;
+    struct sockaddr_in server_address;
+} show_t;
+
 /**
  * This function loads the proxy settings struct with the
  * ones that were passed by parameter in the command line
@@ -43,5 +48,7 @@ void sig_handler(int signo);
 void transmit_dir(int server_fd, int client_fd);
 
 int transmit_file(char *name, int server_fd, int client_fd);
+
+void udp_transfer();
 
 #endif //IRC_PROJECT_IRCPROXY_H
