@@ -158,7 +158,6 @@ void *new_client(void *arg) {
 
 
 
-
     while (!done) {
 
         nread = read(client.client_fd, buffer, BUFFER);
@@ -186,7 +185,6 @@ void *new_client(void *arg) {
 
                     } else if (!strcmp(params[0], "UDP")) {
 
-
                     } else {
                         printf("Error occurred!!\n");
                     }
@@ -208,15 +206,6 @@ void *new_client(void *arg) {
 
             printf("Client closed connection\n");
             printf("Active Clients: %d \n", active_clients);
-        } else {
-            // Kill client if something unexpected occurs
-            clients[client.thread_index] = STATE_FREE;
-            pthread_detach(pthread_self());
-
-            pthread_mutex_lock(&client_temination_mutex);
-            active_clients--;
-            pthread_mutex_unlock(&client_temination_mutex);
-            break;
         }
     }
 
@@ -290,6 +279,7 @@ int send_file(int dst_fd, char *path) {
     src_fd = fileno(src);
     fstat(src_fd, &f_status);
     write(dst_fd, &f_status.st_size, sizeof(off_t));
+
     while ((nread = fread(buffer, 1, BUFFER, src)) != 0) {
         sent += write(dst_fd, buffer, nread);
     }

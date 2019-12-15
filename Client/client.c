@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, SIG_IGN);
 
     if (argc != 5) {
-        printf("Usage: ./client <SERVER ADDRESS> <PROXY ADDRESS> <PORT> <PROTOCOL>\n");
+        printf("Usage: ./client <PROXY ADDRESS> <SERVER ADDRESS> <PORT> <PROTOCOL>\n");
         exit(0);
     }
     settings = get_settings(argv);
@@ -119,7 +119,6 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
 
     }
 
-
     while (!done) {
         signal(SIGINT, sig_handler);
 
@@ -144,6 +143,7 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
                 if (!strcmp(params[0], "TCP")) {
                     stats = get_file(file_path, params[2], fd_tcp);
                     print_stats(stats);
+
                 } else if (!strcmp(params[0], "UDP")) {
                     stats = get_file(file_path, params[2], fd_udp);
                     print_stats(stats);
@@ -201,12 +201,11 @@ stats_t get_file(char *file_path, char *file_name, int server_fd) {
 
     while (received < size) {
         nread = read(server_fd, buffer, BUFFER);
-        fwrite(buffer, 1, BUFFER, dst_fp);
+        fwrite(buffer, 1, nread, dst_fp);
         received += nread;
     }
 
     gettimeofday(&end, NULL);
-
     fclose(dst_fp);
 
     strcpy(stats.name, file_name);

@@ -1,6 +1,7 @@
 #ifndef IRC_PROJECT_FUNCTIONS_H
 #define IRC_PROJECT_FUNCTIONS_H
 
+#include <sodium.h>
 
 #define KiB(x) ((size_t) (x) << 10) // 1024 bytes
 #define BUFFER KiB(2)
@@ -9,6 +10,8 @@
 #define LISTEN_LIMIT 5
 #define STATE_FREE 0
 #define CHAR "$"
+
+#define EBUFFER BUFFER + crypto_secretbox_MACBYTES
 
 typedef struct ClientThread {
     int thread_index;

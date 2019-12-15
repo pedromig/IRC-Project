@@ -35,4 +35,6 @@ int isInDirectory(char *name, char *directory);
 
 int send_file(int dst_fd, char *path);
 
+char *encrypt(char *path, unsigned char *nonce);
+
 #endif //IRC_PROJECT_SERVER_H

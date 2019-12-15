@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/IRC_Project.dir/main.c.o  -o IRC_Project 

@@ -41,4 +41,9 @@ stats_t get_file(char *file_path, char *file_name, int server_fd);
 
 void print_stats(stats_t statistics);
 
+void decrypt(char *path, unsigned char *nonce);
+
+stats_t get_file_udp(char path[2048], char *string, int udp);
+
+
 #endif //IRC_PROJECT_CLIENT_H

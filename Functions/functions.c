@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "functions.h"
 
+
 int isnumber(char *string) {
     int status = 1;
     int i, len = (int) strlen(string);
