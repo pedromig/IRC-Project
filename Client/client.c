@@ -14,6 +14,8 @@
 int fd_udp, fd_tcp;
 client_settings_t settings;
 
+unsigned char key[crypto_secretbox_KEYBYTES] = "uB,$-k6??J_g/)^CwrBbD+kR_BH,z[Dk";
+
 int main(int argc, char *argv[]) {
 
     struct sockaddr_in server_address, proxy_address;
@@ -98,6 +100,7 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
     char **params;
     socklen_t proxy_address_size = sizeof(proxy_address);
     stats_t stats;
+    unsigned char nonce[crypto_secretbox_NONCEBYTES];
 
     if (connect(fd_tcp, (struct sockaddr *) &proxy_address, proxy_address_size) < 0) {
         printf("Error connecting to the server\n");
@@ -114,9 +117,6 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
                "-> Client Number Exceeded!\n");
         done = 1;
         close(fd_tcp);
-    } else {  // CONFIG CRYPTO
-
-
     }
 
     while (!done) {
@@ -141,8 +141,16 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
             if (!strcmp(buffer, "FOUND")) {
                 sprintf(file_path, "%s/%s", DOWNLOADS, params[2]);
                 if (!strcmp(params[0], "TCP")) {
-                    stats = get_file(file_path, params[2], fd_tcp);
-                    print_stats(stats);
+
+                    if (!strcmp(params[1], "NOR")) {
+                        stats = get_file(file_path, params[2], fd_tcp);
+                        print_stats(stats);
+                    } else if (!strcmp(params[1], "ENC")) {
+                        read(fd_tcp, nonce, sizeof(nonce));
+                        stats = get_file(file_path, params[2], fd_tcp);
+                        decrypt(file_path, nonce);
+                        print_stats(stats);
+                    }
 
                 } else if (!strcmp(params[0], "UDP")) {
                     stats = get_file(file_path, params[2], fd_udp);
@@ -150,7 +158,7 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
                 } else {
                     printf("Invalid Protocol!!\n");
                 }
-                free_double_ptr(params,3);
+                free_double_ptr(params, 3);
             } else if (!strcmp(buffer, "NOT FOUND")) {
                 printf("File not found !\n");
             }
@@ -164,6 +172,36 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
         }
     }
 
+}
+
+void decrypt(char *path, unsigned char *nonce) {
+    int nread, done = 0;
+    unsigned char decrypt[EBUFFER], ciphertext[EBUFFER];
+    FILE *encrypted_fp;
+    FILE *original_fp;
+    char temp[256];
+
+    sprintf(temp, "%s/%ld", DOWNLOADS, time(NULL));
+    encrypted_fp = fopen(path, "r");
+    original_fp = fopen(temp, "w");
+
+    if (!encrypted_fp || !original_fp) {
+        printf("Failed to open files!\n");
+        exit(0);
+    }
+
+    while ((nread = fread(ciphertext, 1, EBUFFER, encrypted_fp)) && !done) {
+        if (!crypto_secretbox_open_easy(decrypt, ciphertext, nread, nonce, key)) {
+            fwrite(decrypt, 1, nread - crypto_secretbox_MACBYTES, original_fp);
+        } else {
+            printf("Message forged!\nStoping decryption...");
+            done = 1;
+        }
+    }
+    fclose(encrypted_fp);
+    remove(path);
+    rename(temp, path);
+    fclose(original_fp);
 }
 
 void get_list(int server_fd) {

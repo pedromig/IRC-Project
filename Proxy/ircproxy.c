@@ -211,7 +211,6 @@ void *new_client(void *arg) {
     socklen_t server_address_size;
 
     char nonce[crypto_secretbox_NONCEBYTES];
-    unsigned char key[crypto_secretbox_KEYBYTES];
 
     //Config Connection
     nread = read(client.client_fd, buffer, BUFFER);
@@ -242,9 +241,6 @@ void *new_client(void *arg) {
             cleanup(client);
             done = 1;
             printf("Server Rejected Connection\n");
-        } else { // CONFIG CRYPTO
-
-
         }
 
         while (!done) {
@@ -268,7 +264,13 @@ void *new_client(void *arg) {
                 write(client.client_fd, buffer, BUFFER);
 
                 if (!strcmp(buffer, "FOUND")) {
-                    transmit_file(params[2], server_fd, client.client_fd);
+                    if(!strcmp(params[1],"NOR")){
+                        transmit_file(params[2], server_fd, client.client_fd);
+                    } else if( !strcmp(params[1],"ENC")){
+                        read(server_fd,buffer,sizeof(nonce));
+                        write(client.client_fd,buffer,sizeof(nonce));
+                        transmit_file(params[2], server_fd, client.client_fd);
+                    }
                 }
                 free_double_ptr(params, 3);
             } else if (!strcmp(buffer, "QUIT")) {
@@ -333,7 +335,7 @@ int transmit_file(char *name, int server_fd, int client_fd) {
         nread = read(server_fd, buffer, BUFFER);
         sent += write(client_fd, buffer, nread);
         if (save && save_fp)
-            fwrite(buffer, 1, BUFFER, save_fp);
+            fwrite(buffer, 1, nread, save_fp);
         received += nread;
     }
 

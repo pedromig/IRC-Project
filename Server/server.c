@@ -18,6 +18,8 @@ server_settings_t settings;
 pthread_t *clients;
 pthread_mutex_t client_temination_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+unsigned char key[crypto_secretbox_KEYBYTES] = "uB,$-k6??J_g/)^CwrBbD+kR_BH,z[Dk";
+
 int main(int argc, char *argv[]) {
     int nread = 0, client_fd, found, ignore, i;
     char buffer[BUFFER];
@@ -149,14 +151,12 @@ void *new_client(void *arg) {
     char file_path[BUFFER * 2];
     char buffer[BUFFER];
     char **params;
+    char *encrypted;
+    unsigned char nonce[crypto_secretbox_NONCEBYTES];
     client_thread_t client = *((client_thread_t *) arg);
 
     free(arg);
     printf("Client Active!!\n");
-
-    // CONFIG CRYPTO
-
-
 
     while (!done) {
 
@@ -179,9 +179,22 @@ void *new_client(void *arg) {
 
                     if (!strcmp(params[0], "TCP")) {
 
-                        printf("SENDING FILE...\n");
-                        send_file(client.client_fd, file_path);
-                        printf("DONE!\n");
+                        if (!strcmp(params[1], "NOR")) {
+                            printf("SENDING FILE...\n");
+                            send_file(client.client_fd, file_path);
+                            printf("DONE!\n");
+                        } else if (!strcmp(params[1], "ENC")) {
+
+                            randombytes_buf(nonce, sizeof(nonce));
+                            encrypted = encrypt(file_path, nonce);
+                            write(client.client_fd, nonce, sizeof(nonce));
+
+                            printf("SENDING ENCRYPTED FILE...\n");
+                            send_file(client.client_fd, encrypted);
+                            printf("DONE!\n");
+                            remove(encrypted);
+                            free(encrypted);
+                        }
 
                     } else if (!strcmp(params[0], "UDP")) {
 
@@ -211,6 +224,34 @@ void *new_client(void *arg) {
 
     close(client.client_fd);
     pthread_exit(NULL);
+}
+
+char *encrypt(char *path, unsigned char *nonce) {
+    int nread;
+    unsigned char buffer[BUFFER], ciphertext[EBUFFER];
+    char encrypted_path[256];
+    FILE *original_fp;
+    FILE *encrypted_fp;
+
+
+    sprintf(encrypted_path, "%s/%ld", SERVER_FILES, time(NULL));
+
+    original_fp = fopen(path, "rb");
+    encrypted_fp = fopen(encrypted_path, "wb");
+
+    if (!original_fp || !encrypted_fp) {
+        printf("Failed to open files!\n");
+        exit(0);
+    }
+
+    while ((nread = fread(buffer, 1, BUFFER, original_fp))) {
+        crypto_secretbox_easy(ciphertext, buffer, nread, nonce, key);
+        fwrite(ciphertext, 1, nread + crypto_secretbox_MACBYTES, encrypted_fp);
+    }
+    fclose(original_fp);
+    fclose(encrypted_fp);
+
+    return strdup(encrypted_path);
 }
 
 void *new_udp_client(void *arg) {
