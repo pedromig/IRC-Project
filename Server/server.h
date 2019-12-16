@@ -33,8 +33,12 @@ void list_dir(int client_fd, char *directory);
 
 int isInDirectory(char *name, char *directory);
 
-int send_file(int dst_fd, char *path);
+int send_file_tcp(int dst_fd, char *path);
+
+int send_file_udp(int fd,struct sockaddr_in client,char *path);
 
 char *encrypt(char *path, unsigned char *nonce);
+
+void udp_transfer(char *path);
 
 #endif //IRC_PROJECT_SERVER_H

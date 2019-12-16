@@ -10,13 +10,15 @@
 #include "ircproxy.h"
 #include "../Functions/functions.h"
 
-int proxy_fd_tcp, proxy_fd_udp, active_clients;
+int proxy_fd_tcp, active_clients;
 int *descriptors;
 int losses;
 int save;
 pthread_t *clients, proxy_thread;
 pthread_mutex_t client_temination_mutex = PTHREAD_MUTEX_INITIALIZER;
 show_t *info;
+struct sockaddr_in server_address;
+struct sockaddr_in proxy_address;
 
 int main(int argc, char *argv[]) {
     int done = 0, i;
@@ -25,7 +27,6 @@ int main(int argc, char *argv[]) {
     char command[BUFFER];
     char buffer[BUFFER];
     struct sockaddr_in client_address;
-    struct sockaddr_in proxy_address;
     proxy_settings_t settings;
 
     losses = 0;
@@ -47,11 +48,6 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    if ((proxy_fd_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        printf("Error creating the proxy udp socket\n");
-        exit(0);
-    }
-
     memset(&proxy_address, 0, sizeof(proxy_address));
     proxy_address.sin_family = AF_INET;
     proxy_address.sin_addr.s_addr = settings.network_address;
@@ -68,10 +64,6 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    if (bind(proxy_fd_udp, (struct sockaddr *) &proxy_address, sizeof(proxy_address)) == -1) {
-        printf("Error binding the udp socket\n");
-        exit(0);
-    }
 
     signal(SIGINT, sig_handler);
     if (pthread_create(&proxy_thread, NULL, proxy, &client_address)) {
@@ -225,7 +217,6 @@ void *new_client(void *arg) {
     int server_fd;
     char buffer[BUFFER];
     char **params;
-    struct sockaddr_in server_address;
     client_thread_t client = *((client_thread_t *) arg);
     socklen_t server_address_size;
 
@@ -276,7 +267,7 @@ void *new_client(void *arg) {
                 write(server_fd, buffer, BUFFER);
                 params = parseCommand(buffer);
 
-                if(!strcmp(params[0],"TCP")){
+                if (!strcmp(params[0], "TCP")) {
                     read(server_fd, buffer, BUFFER);
                     buffer[nread] = '\0';
 
@@ -293,8 +284,14 @@ void *new_client(void *arg) {
                     }
                 }
 
-                if(!strcmp(params[0],"UDP")){
-                    udp_transfer();
+                if (!strcmp(params[0], "UDP")) {
+                    read(server_fd, buffer, BUFFER);
+                    buffer[nread] = '\0';
+
+                    write(client.client_fd, buffer, BUFFER);
+                    if (!strcmp(buffer, "FOUND")) {
+                        udp_transmition(params[2]);
+                    }
                 }
 
                 free_double_ptr(params, 3);
@@ -385,7 +382,68 @@ void transmit_dir(int server_fd, int client_fd) {
 }
 
 
-void udp_transfer(){
+int udp_transmition(char *name) {
+    int received = 0, nread = 0, sent = 0;
+    char path[BUFFER];
+    int server_fd_udp, proxy_fd_udp;
+    struct sockaddr_in client;
+    struct sockaddr_in server;
+    char buffer[BUFFER];
+    socklen_t clen = sizeof(client);
+    socklen_t slen = sizeof(server);
+    off_t size;
+    FILE *save_fp = NULL;
+
+    if ((proxy_fd_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+        printf("Error creating the proxy udp socket\n");
+        exit(0);
+    }
+
+    if (bind(proxy_fd_udp, (struct sockaddr *) &proxy_address, sizeof(proxy_address)) == -1) {
+        printf("Error binding the server udp socket\n");
+        exit(0);
+    }
+
+
+    if ((server_fd_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+        printf("Error creating the proxy udp socket\n");
+        exit(0);
+    }
+
+    recvfrom(proxy_fd_udp, buffer, BUFFER, 0, (struct sockaddr *) &client, (socklen_t *) &clen);
+    sendto(server_fd_udp, buffer, BUFFER, 0, (struct sockaddr *) &server_address, (socklen_t) slen);
+
+    recvfrom(server_fd_udp, &size, sizeof(size), 0, (struct sockaddr *) &server, (socklen_t *) &clen);
+    sendto(proxy_fd_udp, &size, sizeof(size), 0, (struct sockaddr *) &client, (socklen_t) slen);
+
+    if (save) {
+        sprintf(path, "%s/%s", PROXY, name);
+        save_fp = fopen(path, "wb");
+        if (!save_fp) {
+            printf("Error occurred while opening the file!\n");
+            received = size;
+        }
+    }
+
+
+    while (received < size ) {
+        nread = recvfrom(server_fd_udp, buffer, BUFFER, 0, (struct sockaddr *) &server, (socklen_t *) &clen);
+        //LOSSES
+        if (rand() % 100 > losses) {
+            sent += sendto(proxy_fd_udp, buffer, nread, 0, (struct sockaddr *) &client, (socklen_t) slen);
+        }
+        if (save && save_fp)
+            fwrite(buffer, 1, nread, save_fp);
+        received += nread;
+
+    }
+
+    if (save_fp)
+        fclose(save_fp);
+
+    close(server_fd_udp);
+    close(proxy_fd_udp);
+    return sent;
 
 }
 
@@ -410,6 +468,5 @@ void sig_handler(int signo) {
     free(descriptors);
     free(info);
     close(proxy_fd_tcp);
-    close(proxy_fd_udp);
     exit(0);
 }

@@ -4,12 +4,13 @@
 #include <sodium.h>
 
 #define KiB(x) ((size_t) (x) << 10) // 1024 bytes
-#define BUFFER KiB(2)
+#define BUFFER 512
 #define MEDIUM_BUFFER KiB(6)
 #define LARGE_BUFFER KiB(12)
 #define LISTEN_LIMIT 5
 #define STATE_FREE 0
 #define CHAR "$"
+#define TIMEOUT 5
 
 #define EBUFFER BUFFER + crypto_secretbox_MACBYTES
 

@@ -13,12 +13,13 @@
 
 int fd_udp, fd_tcp;
 client_settings_t settings;
+struct sockaddr_in server_address, proxy_address;
 
 unsigned char key[crypto_secretbox_KEYBYTES] = "uB,$-k6??J_g/)^CwrBbD+kR_BH,z[Dk";
 
 int main(int argc, char *argv[]) {
 
-    struct sockaddr_in server_address, proxy_address;
+
     signal(SIGINT, SIG_IGN);
 
     if (argc != 5) {
@@ -92,8 +93,8 @@ client_settings_t get_settings(char *argv[]) {
     return settings;
 }
 
-void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address) {
-    int nread = 0, done = 0, encryption;
+void client() {
+    int nread = 0, done = 0;
     char command[BUFFER];
     char buffer[BUFFER], copy[BUFFER];
     char file_path[BUFFER];
@@ -142,20 +143,23 @@ void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address)
                 if (!strcmp(params[0], "TCP")) {
 
                     if (!strcmp(params[1], "NOR")) {
-                        stats = get_file(file_path, params[2], fd_tcp);
+                        stats = get_file_tcp(file_path, params[2], fd_tcp);
                         print_stats(stats);
                     } else if (!strcmp(params[1], "ENC")) {
                         read(fd_tcp, nonce, sizeof(nonce));
-                        stats = get_file(file_path, params[2], fd_tcp);
+                        stats = get_file_tcp(file_path, params[2], fd_tcp);
                         decrypt(file_path, nonce);
                         print_stats(stats);
                     }
+
                 } else if (!strcmp(params[0], "UDP")) {
+                    char test[BUFFER];
+                    socklen_t slen = sizeof(proxy_address);
 
+                    strcpy(test, "STARTING...");
+                    sendto(fd_udp, test, BUFFER, 0, (struct sockaddr *) &proxy_address, slen);
 
-
-
-                    stats = get_file(file_path, params[2], fd_udp);
+                    stats = get_file_udp(file_path, params[2]);
                     print_stats(stats);
                 } else {
                     printf("Invalid Protocol!!\n");
@@ -211,11 +215,11 @@ void get_list(int server_fd) {
     int done = 0;
     char read_buff[KiB(2)];
 
-    nread = read(server_fd, read_buff, KiB(2));
+    nread = read(server_fd, read_buff,  BUFFER);
     read_buff[nread] = '\0';
 
     while (!done) {
-        nread = read(server_fd, read_buff, KiB(2));
+        nread = read(server_fd, read_buff, BUFFER);
         read_buff[nread] = '\0';
         if (!strcmp(read_buff, CHAR)) {
             done = 1;
@@ -226,7 +230,7 @@ void get_list(int server_fd) {
 }
 
 
-stats_t get_file(char *file_path, char *file_name, int server_fd) {
+stats_t get_file_tcp(char *file_path, char *file_name, int server_fd) {
     int received = 0, nread = 0;
     char buffer[BUFFER];
     FILE *dst_fp = fopen(file_path, "wb");
@@ -249,11 +253,39 @@ stats_t get_file(char *file_path, char *file_name, int server_fd) {
     fclose(dst_fp);
 
     strcpy(stats.name, file_name);
-    if (settings.protocol == IPPROTO_TCP) {
-        strcpy(stats.protocol, "TCP");
-    } else {
-        strcpy(stats.protocol, "UDP");
+    strcpy(stats.protocol, "TCP");
+
+    stats.nbytes = received;
+    stats.time_sec = end.tv_sec - start.tv_sec;
+    stats.time_micro = end.tv_usec - start.tv_usec;
+
+    return stats;
+}
+
+stats_t get_file_udp(char *file_path, char *file_name) {
+    int received = 0, nread = 0, plen;
+    char buffer[BUFFER];
+    FILE *dst_fp = fopen(file_path, "wb");
+    struct timeval start, end;
+    stats_t stats;
+    off_t size;
+    time_t s, n;
+
+    printf("Waiting for file\n");
+    gettimeofday(&start, NULL);
+
+    recvfrom(fd_udp, &size, sizeof(size), 0, (struct sockaddr *) &proxy_address, (socklen_t *) &plen);
+
+    while (received < size) {
+        nread = recvfrom(fd_udp, buffer, BUFFER, 0, (struct sockaddr *) &proxy_address, (socklen_t *) &plen);
+        fwrite(buffer, 1, nread, dst_fp);
+        received += nread;
     }
+    gettimeofday(&end, NULL);
+    fclose(dst_fp);
+
+    strcpy(stats.name, file_name);
+    strcpy(stats.protocol, "UDP");
 
     stats.nbytes = received;
     stats.time_sec = end.tv_sec - start.tv_sec;

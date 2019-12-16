@@ -49,6 +49,6 @@ void transmit_dir(int server_fd, int client_fd);
 
 int transmit_file(char *name, int server_fd, int client_fd);
 
-void udp_transfer();
+int udp_transmition(char *name);
 
 #endif //IRC_PROJECT_IRCPROXY_H

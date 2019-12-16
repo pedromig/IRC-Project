@@ -31,19 +31,19 @@ typedef struct Statistics {
  */
 client_settings_t get_settings(char *argv[]);
 
-void client(struct sockaddr_in proxy_address, struct sockaddr_in server_address);
+void client();
 
 void get_list(int server_fd);
 
 void sig_handler(int signo);
 
-stats_t get_file(char *file_path, char *file_name, int server_fd);
+stats_t get_file_tcp(char *file_path, char *file_name, int server_fd);
 
 void print_stats(stats_t statistics);
 
 void decrypt(char *path, unsigned char *nonce);
 
-stats_t get_file_udp(char path[2048], char *string, int udp);
+stats_t get_file_udp(char *path, char *string);
 
 
 #endif //IRC_PROJECT_CLIENT_H

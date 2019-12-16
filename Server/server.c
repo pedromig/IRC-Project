@@ -12,18 +12,18 @@
 #include "server.h"
 #include "../Functions/functions.h"
 
-int server_fd_tcp, server_fd_udp, active_clients;
+int server_fd_tcp, active_clients;
 int *descriptors;
 server_settings_t settings;
 pthread_t *clients;
 pthread_mutex_t client_temination_mutex = PTHREAD_MUTEX_INITIALIZER;
+struct sockaddr_in server_address, client_address;
 
 unsigned char key[crypto_secretbox_KEYBYTES] = "uB,$-k6??J_g/)^CwrBbD+kR_BH,z[Dk";
 
 int main(int argc, char *argv[]) {
-    int nread = 0, client_fd, found, ignore, i;
+    int nread = 0, client_fd, found, i;
     char buffer[BUFFER];
-    struct sockaddr_in server_address, client_address;
     socklen_t client_address_size;
 
     client_thread_t *client_thread;
@@ -44,11 +44,6 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    if ((server_fd_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        printf("Error creating the udp socket\n");
-        exit(0);
-    }
-
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = settings.network_address;
@@ -61,11 +56,6 @@ int main(int argc, char *argv[]) {
 
     if (listen(server_fd_tcp, LISTEN_LIMIT) == -1) {
         printf("Error preparing the socket to listen to new connections\n");
-        exit(0);
-    }
-
-    if (bind(server_fd_udp, (struct sockaddr *) &server_address, sizeof(server_address)) == -1) {
-        printf("Error binding the udp socket\n");
         exit(0);
     }
 
@@ -181,7 +171,7 @@ void *new_client(void *arg) {
 
                         if (!strcmp(params[1], "NOR")) {
                             printf("SENDING FILE...\n");
-                            send_file(client.client_fd, file_path);
+                            send_file_tcp(client.client_fd, file_path);
                             printf("DONE!\n");
                         } else if (!strcmp(params[1], "ENC")) {
 
@@ -190,13 +180,14 @@ void *new_client(void *arg) {
                             write(client.client_fd, nonce, sizeof(nonce));
 
                             printf("SENDING ENCRYPTED FILE...\n");
-                            send_file(client.client_fd, encrypted);
+                            send_file_tcp(client.client_fd, encrypted);
                             printf("DONE!\n");
                             remove(encrypted);
                             free(encrypted);
                         }
 
                     } else if (!strcmp(params[0], "UDP")) {
+                        udp_transfer(file_path);
 
                     } else {
                         printf("Error occurred!!\n");
@@ -219,9 +210,6 @@ void *new_client(void *arg) {
 
             printf("Client closed connection\n");
             printf("Active Clients: %d \n", active_clients);
-        } else {
-            // Kill server if something unexpected occurs
-            sig_handler(SIGINT);
         }
     }
 
@@ -257,13 +245,6 @@ char *encrypt(char *path, unsigned char *nonce) {
     return strdup(encrypted_path);
 }
 
-void *new_udp_client(void *arg) {
-    client_thread_t client = *((client_thread_t *) arg);
-    pthread_detach(pthread_self());
-    printf("Client Active[%d]\n", client.client_fd);
-
-    return NULL;
-}
 
 void list_dir(int client_fd, char *directory) {
     int nwrite = 0;
@@ -309,7 +290,7 @@ int isInDirectory(char *name, char *directory) {
     return found;
 }
 
-int send_file(int dst_fd, char *path) {
+int send_file_tcp(int dst_fd, char *path) {
     FILE *src;
     struct stat f_status;
     int nread, sent = 0, src_fd;
@@ -333,6 +314,58 @@ int send_file(int dst_fd, char *path) {
     return sent;
 }
 
+int send_file_udp(int fd,struct sockaddr_in client,char *path) {
+    FILE *src;
+    struct stat f_status;
+    int nread, sent = 0, src_fd;
+    char buffer[BUFFER];
+    socklen_t slen = sizeof(client);
+
+    if (!(src = fopen(path, "rb"))) {
+        printf("Error opening the file\n");
+        exit(0);
+    }
+
+    src_fd = fileno(src);
+    fstat(src_fd, &f_status);
+    sendto(fd, &f_status.st_size, sizeof(off_t), 0, (struct sockaddr *) &client, (socklen_t) slen);
+
+    while ((nread = fread(buffer, 1, BUFFER, src)) != 0) {
+        sent += sendto(fd, buffer, nread, 0, (struct sockaddr *) &client, (socklen_t) slen);;
+    }
+
+    printf("Sent: %d\n", sent);
+    fclose(src);
+    return sent;
+}
+
+
+void udp_transfer(char *path) {
+    int len, fd_udp;
+    char buffer[BUFFER];
+    struct sockaddr_in client;
+    socklen_t clen = sizeof(client);
+
+    printf("Entrou aqui\n");
+
+    if ((fd_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+        printf("Error creating the server udp socket\n");
+        exit(0);
+    }
+
+    if (bind(fd_udp, (struct sockaddr *) &server_address, sizeof(server_address)) == -1) {
+        printf("Error binding the server udp socket\n");
+        exit(0);
+    }
+    len = recvfrom(fd_udp, buffer, BUFFER, 0, (struct sockaddr *) &client, (socklen_t *) &clen);
+    buffer[len] = '\0';
+    printf("%s\n", buffer);
+
+    send_file_udp(fd_udp,client,path);
+    printf("DONE!\n");
+    close(fd_udp);
+}
+
 
 void sig_handler(int signo) {
     signal(SIGINT, SIG_IGN);
@@ -353,6 +386,6 @@ void sig_handler(int signo) {
     free(clients);
     free(descriptors);
     close(server_fd_tcp);
-    close(server_fd_udp);
     exit(0);
 }
+
