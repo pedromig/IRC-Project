@@ -22,7 +22,7 @@ struct sockaddr_in server_address, client_address;
 unsigned char key[crypto_secretbox_KEYBYTES] = "uB,$-k6??J_g/)^CwrBbD+kR_BH,z[Dk";
 
 int main(int argc, char *argv[]) {
-    int nread = 0, client_fd, found, i;
+    int nread = 0,nwrite = 0, client_fd, found, i;
     char buffer[BUFFER];
     socklen_t client_address_size;
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
             client_thread->client_fd = client_fd;
 
-            write(client_fd, "Connection Successfull!", BUFFER);
+            nwrite += write(client_fd, "Connection Successfull!", BUFFER);
 
             for (i = 0, found = 0; i < settings.num_clients && !found; i++) {
                 if (clients[i] == STATE_FREE) {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
             buffer[nread] = '\0';
 
             printf("Number of clients exceeded\n");
-            write(client_fd, "REFUSED", BUFFER);
+            nwrite += write(client_fd, "REFUSED", BUFFER);
             close(client_fd);
         }
         printf("Active Clients: %d \n", active_clients);
@@ -137,7 +137,7 @@ void server_info() {
 }
 
 void *new_client(void *arg) {
-    int nread = 0, done = 0;
+    int nread = 0,nwrite = 0, done = 0;
     char file_path[BUFFER * 2];
     char buffer[BUFFER];
     char **params;
@@ -162,7 +162,7 @@ void *new_client(void *arg) {
             if ((params = parseCommand(buffer))) {
 
                 if (isInDirectory(params[2], SERVER_FILES)) {
-                    write(client.client_fd, "FOUND", BUFFER);
+                    nwrite += write(client.client_fd, "FOUND", BUFFER);
 
                     sprintf(file_path, "%s/%s", SERVER_FILES, params[2]);
                     printf("DOWNLOAD FILE: %s\n", file_path);
@@ -177,7 +177,7 @@ void *new_client(void *arg) {
 
                             randombytes_buf(nonce, sizeof(nonce));
                             encrypted = encrypt(file_path, nonce);
-                            write(client.client_fd, nonce, sizeof(nonce));
+                            nwrite += write(client.client_fd, nonce, sizeof(nonce));
 
                             printf("SENDING ENCRYPTED FILE...\n");
                             send_file_tcp(client.client_fd, encrypted);
@@ -187,14 +187,28 @@ void *new_client(void *arg) {
                         }
 
                     } else if (!strcmp(params[0], "UDP")) {
-                        udp_transfer(file_path);
+                        if(!strcmp(params[1],"NOR")){
+                            printf("SENDING FILE...\n");
+                            udp_transfer(file_path);
+                            printf("DONE!\n");
+                        } else if(!strcmp(params[1], "ENC")){
+                            randombytes_buf(nonce, sizeof(nonce));
+                            encrypted = encrypt(file_path, nonce);
+                            nwrite += write(client.client_fd, nonce, sizeof(nonce));
+
+                            printf("SENDING ENCRYPTED FILE...\n");
+                            udp_transfer(encrypted);
+                            printf("DONE!\n");
+                            remove(encrypted);
+                            free(encrypted);
+                        }
 
                     } else {
                         printf("Error occurred!!\n");
                     }
                     free_double_ptr(params, 3);
                 } else {
-                    write(client.client_fd, "NOT FOUND", BUFFER);
+                    nwrite += write(client.client_fd, "NOT FOUND", BUFFER);
                 }
             } else {
                 printf("Wrong command!\n");
@@ -218,7 +232,7 @@ void *new_client(void *arg) {
 }
 
 char *encrypt(char *path, unsigned char *nonce) {
-    int nread;
+    int nread,nwrite;
     unsigned char buffer[BUFFER], ciphertext[EBUFFER];
     char encrypted_path[256];
     FILE *original_fp;
@@ -237,7 +251,7 @@ char *encrypt(char *path, unsigned char *nonce) {
 
     while ((nread = fread(buffer, 1, BUFFER, original_fp))) {
         crypto_secretbox_easy(ciphertext, buffer, nread, nonce, key);
-        fwrite(ciphertext, 1, nread + crypto_secretbox_MACBYTES, encrypted_fp);
+        nwrite += fwrite(ciphertext, 1, nread + crypto_secretbox_MACBYTES, encrypted_fp);
     }
     fclose(original_fp);
     fclose(encrypted_fp);
@@ -246,7 +260,7 @@ char *encrypt(char *path, unsigned char *nonce) {
 }
 
 
-void list_dir(int client_fd, char *directory) {
+int list_dir(int client_fd, char *directory) {
     int nwrite = 0;
     char buffer[BUFFER];
     struct dirent *file;
@@ -274,6 +288,7 @@ void list_dir(int client_fd, char *directory) {
     } else {
         printf("Error opening directory!\n");
     }
+    return nwrite;
 }
 
 int isInDirectory(char *name, char *directory) {
@@ -293,7 +308,7 @@ int isInDirectory(char *name, char *directory) {
 int send_file_tcp(int dst_fd, char *path) {
     FILE *src;
     struct stat f_status;
-    int nread, sent = 0, src_fd;
+    int nread,nwrite = 0, sent = 0, src_fd;
     char buffer[BUFFER];
 
     if (!(src = fopen(path, "rb"))) {
@@ -303,7 +318,7 @@ int send_file_tcp(int dst_fd, char *path) {
 
     src_fd = fileno(src);
     fstat(src_fd, &f_status);
-    write(dst_fd, &f_status.st_size, sizeof(off_t));
+    nwrite += write(dst_fd, &f_status.st_size, sizeof(off_t));
 
     while ((nread = fread(buffer, 1, BUFFER, src)) != 0) {
         sent += write(dst_fd, buffer, nread);
@@ -311,7 +326,7 @@ int send_file_tcp(int dst_fd, char *path) {
 
     printf("Sent: %d\n", sent);
     fclose(src);
-    return sent;
+    return nwrite;
 }
 
 int send_file_udp(int fd,struct sockaddr_in client,char *path) {
@@ -331,7 +346,7 @@ int send_file_udp(int fd,struct sockaddr_in client,char *path) {
     sendto(fd, &f_status.st_size, sizeof(off_t), 0, (struct sockaddr *) &client, (socklen_t) slen);
 
     while ((nread = fread(buffer, 1, BUFFER, src)) != 0) {
-        sent += sendto(fd, buffer, nread, 0, (struct sockaddr *) &client, (socklen_t) slen);;
+        sent += sendto(fd, buffer, nread, 0, (struct sockaddr *) &client, (socklen_t) slen);
     }
 
     printf("Sent: %d\n", sent);

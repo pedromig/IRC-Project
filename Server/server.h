@@ -29,7 +29,7 @@ void *new_client(void *arg);
 
 void sig_handler(int signo);
 
-void list_dir(int client_fd, char *directory);
+int list_dir(int client_fd, char *directory);
 
 int isInDirectory(char *name, char *directory);
 

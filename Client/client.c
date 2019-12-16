@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <netdb.h>
-#include <fcntl.h>
 #include <signal.h>
 #include <time.h>
 #include <sys/time.h>
@@ -93,8 +91,8 @@ client_settings_t get_settings(char *argv[]) {
     return settings;
 }
 
-void client() {
-    int nread = 0, done = 0;
+int client() {
+    int nread = 0, nwrite = 0, done = 0;
     char command[BUFFER];
     char buffer[BUFFER], copy[BUFFER];
     char file_path[BUFFER];
@@ -107,8 +105,8 @@ void client() {
         printf("Error connecting to the server\n");
         exit(0);
     }
-    write(fd_tcp, "TCP", BUFFER);
-    write(fd_tcp, &server_address, sizeof(server_address));
+    nwrite += write(fd_tcp, "TCP", BUFFER);
+    nwrite += write(fd_tcp, &server_address, sizeof(server_address));
 
     nread = read(fd_tcp, buffer, BUFFER);
     buffer[nread] = '\0';
@@ -124,16 +122,16 @@ void client() {
         signal(SIGINT, sig_handler);
 
         printf(">>> ");
-        fgets(command, BUFFER, stdin);
+        nwrite += (long) fgets(command, BUFFER, stdin);
         command[strcspn(command, "\n")] = 0;
         strcpy(copy, command);
         fflush(stdin);
 
         if (!strcmp(command, "LIST")) {
-            write(fd_tcp, "LIST", BUFFER);
+            nwrite += write(fd_tcp, "LIST", BUFFER);
             get_list(fd_tcp);
         } else if ((params = parseCommand(command))) {
-            write(fd_tcp, copy, BUFFER);
+            nwrite += write(fd_tcp, copy, BUFFER);
 
             nread = read(fd_tcp, buffer, BUFFER);
             buffer[nread] = '\0';
@@ -146,7 +144,7 @@ void client() {
                         stats = get_file_tcp(file_path, params[2], fd_tcp);
                         print_stats(stats);
                     } else if (!strcmp(params[1], "ENC")) {
-                        read(fd_tcp, nonce, sizeof(nonce));
+                        nread += read(fd_tcp, nonce, sizeof(nonce));
                         stats = get_file_tcp(file_path, params[2], fd_tcp);
                         decrypt(file_path, nonce);
                         print_stats(stats);
@@ -156,11 +154,22 @@ void client() {
                     char test[BUFFER];
                     socklen_t slen = sizeof(proxy_address);
 
-                    strcpy(test, "STARTING...");
-                    sendto(fd_udp, test, BUFFER, 0, (struct sockaddr *) &proxy_address, slen);
+                    if (!strcmp(params[1], "NOR")) {
+                        strcpy(test, "STARTING...");
+                        sendto(fd_udp, test, BUFFER, 0, (struct sockaddr *) &proxy_address, slen);
 
-                    stats = get_file_udp(file_path, params[2]);
-                    print_stats(stats);
+                        stats = get_file_udp(file_path, params[2]);
+                        print_stats(stats);
+                    } else if (!strcmp(params[1], "ENC")) {
+                        nread += read(fd_tcp, nonce, sizeof(nonce));
+                        strcpy(test, "STARTING...");
+                        sendto(fd_udp, test, BUFFER, 0, (struct sockaddr *) &proxy_address, slen);
+
+                        stats = get_file_udp(file_path, params[2]);
+                        decrypt(file_path, nonce);
+                        print_stats(stats);
+                    }
+
                 } else {
                     printf("Invalid Protocol!!\n");
                 }
@@ -170,18 +179,19 @@ void client() {
             }
 
         } else if (!strcmp(command, "QUIT")) {
-            write(fd_tcp, "QUIT", BUFFER);
+            nwrite += write(fd_tcp, "QUIT", BUFFER);
             done = 1;
             close(fd_tcp);
         } else {
             printf("Invalid Command!!\n");
         }
     }
+    return nread;
 
 }
 
 void decrypt(char *path, unsigned char *nonce) {
-    int nread, done = 0;
+    int nread, nwrite = 0, done = 0;
     unsigned char decrypt[EBUFFER], ciphertext[EBUFFER];
     FILE *encrypted_fp;
     FILE *original_fp;
@@ -198,7 +208,7 @@ void decrypt(char *path, unsigned char *nonce) {
 
     while ((nread = fread(ciphertext, 1, EBUFFER, encrypted_fp)) && !done) {
         if (!crypto_secretbox_open_easy(decrypt, ciphertext, nread, nonce, key)) {
-            fwrite(decrypt, 1, nread - crypto_secretbox_MACBYTES, original_fp);
+            nwrite += fwrite(decrypt, 1, nread - crypto_secretbox_MACBYTES, original_fp);
         } else {
             printf("Message forged!\nStoping decryption...");
             done = 1;
@@ -215,7 +225,7 @@ void get_list(int server_fd) {
     int done = 0;
     char read_buff[KiB(2)];
 
-    nread = read(server_fd, read_buff,  BUFFER);
+    nread = read(server_fd, read_buff, BUFFER);
     read_buff[nread] = '\0';
 
     while (!done) {
@@ -269,7 +279,6 @@ stats_t get_file_udp(char *file_path, char *file_name) {
     struct timeval start, end;
     stats_t stats;
     off_t size;
-    time_t s, n;
 
     printf("Waiting for file\n");
     gettimeofday(&start, NULL);

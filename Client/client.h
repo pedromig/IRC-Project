@@ -31,7 +31,7 @@ typedef struct Statistics {
  */
 client_settings_t get_settings(char *argv[]);
 
-void client();
+int client();
 
 void get_list(int server_fd);
 

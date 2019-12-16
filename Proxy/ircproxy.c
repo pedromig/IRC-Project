@@ -174,12 +174,11 @@ proxy_settings_t get_settings(char *argv[]) {
 
 void *proxy(void *arg) {
     struct sockaddr_in client_address = *((struct sockaddr_in *) arg);
-    int client_fd, error, nread = 0, i, found = 0;
-    char buffer[BUFFER];
+    int client_fd, i, found = 0;
     socklen_t client_address_size;
     client_thread_t *client_thread;
 
-    client_address_size = (socklen_t) sizeof(client_address);;
+    client_address_size = (socklen_t) sizeof(client_address);
 
     while (1) {
 
@@ -290,7 +289,13 @@ void *new_client(void *arg) {
 
                     write(client.client_fd, buffer, BUFFER);
                     if (!strcmp(buffer, "FOUND")) {
-                        udp_transmition(params[2]);
+                        if (!strcmp(params[1], "NOR")) {
+                            udp_transmition(params[2]);
+                        }else if (!strcmp(params[1], "ENC")){
+                            read(server_fd, buffer, sizeof(nonce));
+                            write(client.client_fd, buffer, sizeof(nonce));
+                            udp_transmition(params[2]);
+                        }
                     }
                 }
 
@@ -363,7 +368,7 @@ int transmit_file(char *name, int server_fd, int client_fd) {
     return sent;
 }
 
-void transmit_dir(int server_fd, int client_fd) {
+int transmit_dir(int server_fd, int client_fd) {
     int nread, done = 0;
     char buffer[BUFFER];
 
@@ -379,6 +384,7 @@ void transmit_dir(int server_fd, int client_fd) {
             write(client_fd, buffer, BUFFER);
         }
     }
+    return nread;
 }
 
 
@@ -426,7 +432,7 @@ int udp_transmition(char *name) {
     }
 
 
-    while (received < size ) {
+    while (received < size) {
         nread = recvfrom(server_fd_udp, buffer, BUFFER, 0, (struct sockaddr *) &server, (socklen_t *) &clen);
         //LOSSES
         if (rand() % 100 > losses) {

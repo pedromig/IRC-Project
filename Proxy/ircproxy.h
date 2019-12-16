@@ -45,7 +45,7 @@ void proxy_info(proxy_settings_t settings);
 
 void sig_handler(int signo);
 
-void transmit_dir(int server_fd, int client_fd);
+int transmit_dir(int server_fd, int client_fd);
 
 int transmit_file(char *name, int server_fd, int client_fd);
 
