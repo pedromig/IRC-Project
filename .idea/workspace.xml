@@ -12,14 +12,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a57fd2b5-3c01-4015-a286-ea0729d6c9c4" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Client/Downloads/irc.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Client/Downloads/war_and_peace.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Server/Server_files/1576618332" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Server/Server_files/1576618350" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client/Downloads/image5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/image5.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Client/Downloads/lyrics.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/lyrics.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Client/client.c" beforeDir="false" afterPath="$PROJECT_DIR$/Client/client.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Functions/functions.h.gch" beforeDir="false" afterPath="$PROJECT_DIR$/Functions/functions.h.gch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Proxy/Saved_files/image2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/Saved_files/image2.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Proxy/Saved_files/lyrics.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/Saved_files/lyrics.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Proxy/ircproxy.c" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/ircproxy.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Proxy/ircproxy.h" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/ircproxy.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Server/server.c" beforeDir="false" afterPath="$PROJECT_DIR$/Server/server.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client" beforeDir="false" afterPath="$PROJECT_DIR$/client" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ircproxy" beforeDir="false" afterPath="$PROJECT_DIR$/ircproxy" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server" beforeDir="false" afterPath="$PROJECT_DIR$/server" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,7 +205,9 @@
       <workItem from="1576513574392" duration="898000" />
       <workItem from="1576529020911" duration="744000" />
       <workItem from="1576572187398" duration="10000" />
-      <workItem from="1576589544252" duration="1647000" />
+      <workItem from="1576589544252" duration="1905000" />
+      <workItem from="1576607134263" duration="927000" />
+      <workItem from="1576617383125" duration="1675000" />
     </task>
     <task id="LOCAL-00001" summary="#Project setup and test files">
       <created>1572466830044</created>
@@ -255,7 +265,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576460553208</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="All bugs related to SHOW command and UDP file transfer corrected">
+      <created>1576591437164</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1576591437164</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -283,7 +300,8 @@
     <MESSAGE value="Added Show command!!" />
     <MESSAGE value="Udp kinda working but idk might need some fixes" />
     <MESSAGE value="Pretty much javardado mas acabado non the less&#10;There are somethings that maybe are suposed to be implemented in another way but i am sick of this project and id rather just hand it over like this cause its working id does what its suposed to acording to the teachers and its better than many prjects that i have seen so far. Traveler if you are seing this text this is for you. If you want to change it feel free but like a wise man said... If it works dont fix it and so i will not cause i have burned many hours of my life in this project with shitty instructions and low teacher support. I am Out (Drop the mic)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Pretty much javardado mas acabado non the less&#10;There are somethings that maybe are suposed to be implemented in another way but i am sick of this project and id rather just hand it over like this cause its working id does what its suposed to acording to the teachers and its better than many prjects that i have seen so far. Traveler if you are seing this text this is for you. If you want to change it feel free but like a wise man said... If it works dont fix it and so i will not cause i have burned many hours of my life in this project with shitty instructions and low teacher support. I am Out (Drop the mic)" />
+    <MESSAGE value="All bugs related to SHOW command and UDP file transfer corrected" />
+    <option name="LAST_COMMIT_MESSAGE" value="All bugs related to SHOW command and UDP file transfer corrected" />
   </component>
   <component name="WindowStateProjectService">
     <state x="731" y="408" width="636" height="297" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1575720222856">
@@ -295,10 +313,10 @@
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="693" y="302" width="524" height="510" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1574965491166" />
-    <state x="306" y="146" width="1297" height="821" key="CommitChangelistDialog2" timestamp="1576460553011">
+    <state x="306" y="146" width="1297" height="821" key="CommitChangelistDialog2" timestamp="1576591436910">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state x="306" y="146" width="1297" height="821" key="CommitChangelistDialog2/0.27.1920.1053@0.27.1920.1053" timestamp="1576460553011" />
+    <state x="306" y="146" width="1297" height="821" key="CommitChangelistDialog2/0.27.1920.1053@0.27.1920.1053" timestamp="1576591436910" />
     <state x="662" y="270" width="585" height="573" key="MultipleFileMergeDialog" timestamp="1576460594622">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>

@@ -161,7 +161,8 @@ int client() {
                         stats = get_file_udp(file_path, params[2]);
                         print_stats(stats);
                     } else if (!strcmp(params[1], "ENC")) {
-                        nread += read(fd_tcp, nonce, sizeof(nonce));
+                        memset(nonce,0,crypto_secretbox_NONCEBYTES);
+                        nread += read(fd_tcp, nonce, crypto_secretbox_NONCEBYTES);
                         strcpy(test, "STARTING...");
                         sendto(fd_udp, test, BUFFER, 0, (struct sockaddr *) &proxy_address, slen);
 
@@ -210,7 +211,7 @@ void decrypt(char *path, unsigned char *nonce) {
         if (!crypto_secretbox_open_easy(decrypt, ciphertext, nread, nonce, key)) {
             nwrite += fwrite(decrypt, 1, nread - crypto_secretbox_MACBYTES, original_fp);
         } else {
-            printf("Message forged!\nStoping decryption...");
+            printf("Message forged!\nStoping decryption...\n");
             done = 1;
         }
     }

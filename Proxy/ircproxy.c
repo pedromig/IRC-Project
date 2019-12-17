@@ -197,7 +197,7 @@ void *proxy(void *arg) {
                 if (clients[i] == STATE_FREE) {
                     client_thread->thread_index = i;
                     info[i].client_address = client_address.sin_addr;
-                    info[i].server_port = client_address.sin_port;
+                    info[i].client_port = client_address.sin_port;
                     if (pthread_create(&clients[i], NULL, new_client, client_thread)) {
                         printf("Client Thread creation failed\n");
                         exit(0);
@@ -280,8 +280,8 @@ void *new_client(void *arg) {
                         if (!strcmp(params[1], "NOR")) {
                             transmit_file(params[2], server_fd, client.client_fd);
                         } else if (!strcmp(params[1], "ENC")) {
-                            read(server_fd, buffer, sizeof(nonce));
-                            write(client.client_fd, buffer, sizeof(nonce));
+                            read(server_fd, nonce, sizeof(nonce));
+                            write(client.client_fd, nonce, sizeof(nonce));
                             transmit_file(params[2], server_fd, client.client_fd);
                         }
                     }
@@ -296,8 +296,9 @@ void *new_client(void *arg) {
                         if (!strcmp(params[1], "NOR")) {
                             udp_transmition(params[2]);
                         } else if (!strcmp(params[1], "ENC")) {
-                            read(server_fd, buffer, sizeof(nonce));
-                            write(client.client_fd, buffer, sizeof(nonce));
+                            memset(nonce,0,crypto_secretbox_NONCEBYTES);
+                            read(server_fd, nonce,crypto_secretbox_NONCEBYTES);
+                            write(client.client_fd, nonce, crypto_secretbox_NONCEBYTES);
                             udp_transmition(params[2]);
                         }
                     }

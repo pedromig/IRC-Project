@@ -192,9 +192,10 @@ void *new_client(void *arg) {
                             udp_transfer(file_path);
                             printf("DONE!\n");
                         } else if (!strcmp(params[1], "ENC")) {
-                            randombytes_buf(nonce, sizeof(nonce));
+                            memset(nonce,0,crypto_secretbox_NONCEBYTES);
+                            randombytes_buf(nonce, crypto_secretbox_NONCEBYTES);
                             encrypted = encrypt(file_path, nonce);
-                            nwrite += write(client.client_fd, nonce, sizeof(nonce));
+                            nwrite += write(client.client_fd, nonce,crypto_secretbox_NONCEBYTES);
 
                             printf("SENDING ENCRYPTED FILE...\n");
                             udp_transfer(encrypted);
@@ -225,6 +226,15 @@ void *new_client(void *arg) {
             printf("Client closed connection\n");
             printf("Active Clients: %d \n", active_clients);
         }
+        else{
+            clients[client.thread_index] = STATE_FREE;
+            pthread_detach(pthread_self());
+
+            pthread_mutex_lock(&client_temination_mutex);
+            active_clients--;
+            pthread_mutex_unlock(&client_temination_mutex);
+            break;
+        }
     }
 
     close(client.client_fd);
@@ -232,7 +242,7 @@ void *new_client(void *arg) {
 }
 
 char *encrypt(char *path, unsigned char *nonce) {
-    int nread, nwrite;
+    int nread, nwrite = 0;
     unsigned char buffer[BUFFER], ciphertext[EBUFFER];
     char encrypted_path[256];
     FILE *original_fp;
