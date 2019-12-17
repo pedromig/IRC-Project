@@ -120,17 +120,19 @@ int main(int argc, char *argv[]) {
             }
 
         } else if (!strcmp(command, "SHOW")) {
+            char ip[INET_ADDRSTRLEN];
+
             printf("<----------------- INFO ----------------->\n");
             for (i = 0; i < NUM_CLIENTS_MAX; i++) {
                 if (clients[i] != STATE_FREE) {
                     printf("\nCLIENT [%d]\n", i + 1);
-                    inet_ntop(AF_INET, &info[i].client_address, buffer, sizeof(info[i].client_address));
-                    printf("Client Address: %s\n", buffer);
-                    printf("Client Port: %d\n", info[i].client_address.sin_port);
+                    inet_ntop(AF_INET, &info[i].client_address, ip, INET_ADDRSTRLEN);
+                    printf("Client Address: %s\n", ip);
+                    printf("Client Port: %ld\n", info[i].client_port);
 
-                    inet_ntop(AF_INET, &info[i].server_address, buffer, sizeof(info[i].server_address));
-                    printf("Server Address: %s\n", buffer);
-                    printf("Server Port: %d\n", info[i].server_address.sin_port);
+                    inet_ntop(AF_INET, &info[i].server_address, ip, INET_ADDRSTRLEN);
+                    printf("Server Address: %s\n", ip);
+                    printf("Server Port: %ld\n", info[i].server_port);
                 }
             }
             printf("\n<---------------------------------------->\n");
@@ -194,7 +196,8 @@ void *proxy(void *arg) {
             for (i = 0, found = 0; i < NUM_CLIENTS_MAX && !found; i++) {
                 if (clients[i] == STATE_FREE) {
                     client_thread->thread_index = i;
-                    info[i].client_address = client_address;
+                    info[i].client_address = client_address.sin_addr;
+                    info[i].server_port = client_address.sin_port;
                     if (pthread_create(&clients[i], NULL, new_client, client_thread)) {
                         printf("Client Thread creation failed\n");
                         exit(0);
@@ -238,7 +241,8 @@ void *new_client(void *arg) {
             close(server_fd);
             cleanup(client);
         }
-        info[client.thread_index].server_address = server_address;
+        info[client.thread_index].server_address = server_address.sin_addr;
+        info[client.thread_index].server_port = server_address.sin_port;
 
         write(server_fd, "TCP", BUFFER);
         nread = read(server_fd, buffer, BUFFER);
@@ -291,7 +295,7 @@ void *new_client(void *arg) {
                     if (!strcmp(buffer, "FOUND")) {
                         if (!strcmp(params[1], "NOR")) {
                             udp_transmition(params[2]);
-                        }else if (!strcmp(params[1], "ENC")){
+                        } else if (!strcmp(params[1], "ENC")) {
                             read(server_fd, buffer, sizeof(nonce));
                             write(client.client_fd, buffer, sizeof(nonce));
                             udp_transmition(params[2]);
@@ -441,8 +445,8 @@ int udp_transmition(char *name) {
         if (save && save_fp)
             fwrite(buffer, 1, nread, save_fp);
         received += nread;
-
     }
+    sendto(proxy_fd_udp, "EOF", BUFFER, 0, (struct sockaddr *) &client, (socklen_t) slen);
 
     if (save_fp)
         fclose(save_fp);

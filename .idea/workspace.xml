@@ -12,14 +12,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a57fd2b5-3c01-4015-a286-ea0729d6c9c4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Client/Downloads/image1.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Proxy/Saved_files/image5.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Relatorio/RelatórioIRC.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/Downloads/image2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/image2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/Downloads/image4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/image4.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/Downloads/image5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/image5.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client/Downloads/lyrics.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/lyrics.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client/client.c" beforeDir="false" afterPath="$PROJECT_DIR$/Client/client.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Functions/functions.h.gch" beforeDir="false" afterPath="$PROJECT_DIR$/Functions/functions.h.gch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Proxy/Saved_files/lyrics.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/Saved_files/lyrics.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Proxy/ircproxy.c" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/ircproxy.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Proxy/ircproxy.h" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/ircproxy.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Server/server.c" beforeDir="false" afterPath="$PROJECT_DIR$/Server/server.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ircproxy" beforeDir="false" afterPath="$PROJECT_DIR$/ircproxy" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,6 +197,7 @@
       <workItem from="1576513574392" duration="898000" />
       <workItem from="1576529020911" duration="744000" />
       <workItem from="1576572187398" duration="10000" />
+      <workItem from="1576589544252" duration="1647000" />
     </task>
     <task id="LOCAL-00001" summary="#Project setup and test files">
       <created>1572466830044</created>

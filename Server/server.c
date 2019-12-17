@@ -22,7 +22,7 @@ struct sockaddr_in server_address, client_address;
 unsigned char key[crypto_secretbox_KEYBYTES] = "uB,$-k6??J_g/)^CwrBbD+kR_BH,z[Dk";
 
 int main(int argc, char *argv[]) {
-    int nread = 0,nwrite = 0, client_fd, found, i;
+    int nread = 0, nwrite = 0, client_fd, found, i;
     char buffer[BUFFER];
     socklen_t client_address_size;
 
@@ -137,7 +137,7 @@ void server_info() {
 }
 
 void *new_client(void *arg) {
-    int nread = 0,nwrite = 0, done = 0;
+    int nread = 0, nwrite = 0, done = 0;
     char file_path[BUFFER * 2];
     char buffer[BUFFER];
     char **params;
@@ -187,11 +187,11 @@ void *new_client(void *arg) {
                         }
 
                     } else if (!strcmp(params[0], "UDP")) {
-                        if(!strcmp(params[1],"NOR")){
+                        if (!strcmp(params[1], "NOR")) {
                             printf("SENDING FILE...\n");
                             udp_transfer(file_path);
                             printf("DONE!\n");
-                        } else if(!strcmp(params[1], "ENC")){
+                        } else if (!strcmp(params[1], "ENC")) {
                             randombytes_buf(nonce, sizeof(nonce));
                             encrypted = encrypt(file_path, nonce);
                             nwrite += write(client.client_fd, nonce, sizeof(nonce));
@@ -232,7 +232,7 @@ void *new_client(void *arg) {
 }
 
 char *encrypt(char *path, unsigned char *nonce) {
-    int nread,nwrite;
+    int nread, nwrite;
     unsigned char buffer[BUFFER], ciphertext[EBUFFER];
     char encrypted_path[256];
     FILE *original_fp;
@@ -308,7 +308,7 @@ int isInDirectory(char *name, char *directory) {
 int send_file_tcp(int dst_fd, char *path) {
     FILE *src;
     struct stat f_status;
-    int nread,nwrite = 0, sent = 0, src_fd;
+    int nread, nwrite = 0, sent = 0, src_fd;
     char buffer[BUFFER];
 
     if (!(src = fopen(path, "rb"))) {
@@ -329,7 +329,7 @@ int send_file_tcp(int dst_fd, char *path) {
     return nwrite;
 }
 
-int send_file_udp(int fd,struct sockaddr_in client,char *path) {
+int send_file_udp(int fd, struct sockaddr_in client, char *path) {
     FILE *src;
     struct stat f_status;
     int nread, sent = 0, src_fd;
@@ -376,7 +376,7 @@ void udp_transfer(char *path) {
     buffer[len] = '\0';
     printf("%s\n", buffer);
 
-    send_file_udp(fd_udp,client,path);
+    send_file_udp(fd_udp, client, path);
     printf("DONE!\n");
     close(fd_udp);
 }

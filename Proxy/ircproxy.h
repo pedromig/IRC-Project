@@ -21,8 +21,10 @@ typedef struct ProxyClientThread {
 } pclient_thread_t;
 
 typedef struct ShowInfoStructure {
-    struct sockaddr_in client_address;
-    struct sockaddr_in server_address;
+    struct in_addr client_address;
+    long client_port;
+    struct in_addr server_address;
+    long server_port;
 } show_t;
 
 /**

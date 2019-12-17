@@ -287,6 +287,9 @@ stats_t get_file_udp(char *file_path, char *file_name) {
 
     while (received < size) {
         nread = recvfrom(fd_udp, buffer, BUFFER, 0, (struct sockaddr *) &proxy_address, (socklen_t *) &plen);
+        if (!strncmp(buffer, "EOF", 3)) {
+            break;
+        }
         fwrite(buffer, 1, nread, dst_fp);
         received += nread;
     }
