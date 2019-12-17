@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/IRC_Project.dir/Server/server.c.o CMakeFiles/IRC_Project.dir/Client/client.c.o CMakeFiles/IRC_Project.dir/Proxy/ircproxy.c.o CMakeFiles/IRC_Project.dir/Functions/functions.c.o  -o IRC_Project 
