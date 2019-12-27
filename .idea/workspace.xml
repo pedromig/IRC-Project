@@ -12,22 +12,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a57fd2b5-3c01-4015-a286-ea0729d6c9c4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Client/Downloads/irc.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client/Downloads/war_and_peace.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Server/Server_files/1576618332" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Server/Server_files/1576618350" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/Downloads/image5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/image5.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/Downloads/lyrics.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Client/Downloads/lyrics.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/client.c" beforeDir="false" afterPath="$PROJECT_DIR$/Client/client.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Functions/functions.h.gch" beforeDir="false" afterPath="$PROJECT_DIR$/Functions/functions.h.gch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Proxy/Saved_files/image2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/Saved_files/image2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Proxy/Saved_files/lyrics.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/Saved_files/lyrics.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Proxy/ircproxy.c" beforeDir="false" afterPath="$PROJECT_DIR$/Proxy/ircproxy.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Server/server.c" beforeDir="false" afterPath="$PROJECT_DIR$/Server/server.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client" beforeDir="false" afterPath="$PROJECT_DIR$/client" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ircproxy" beforeDir="false" afterPath="$PROJECT_DIR$/ircproxy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server" beforeDir="false" afterPath="$PROJECT_DIR$/server" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +72,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.C/C++" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -207,7 +197,8 @@
       <workItem from="1576572187398" duration="10000" />
       <workItem from="1576589544252" duration="1905000" />
       <workItem from="1576607134263" duration="927000" />
-      <workItem from="1576617383125" duration="1675000" />
+      <workItem from="1576617383125" duration="1793000" />
+      <workItem from="1577198554209" duration="3358000" />
     </task>
     <task id="LOCAL-00001" summary="#Project setup and test files">
       <created>1572466830044</created>
@@ -317,6 +308,10 @@
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="306" y="146" width="1297" height="821" key="CommitChangelistDialog2/0.27.1920.1053@0.27.1920.1053" timestamp="1576591436910" />
+    <state x="706" y="264" width="477" height="552" key="FileChooserDialogImpl" timestamp="1577201476283">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="706" y="264" width="477" height="552" key="FileChooserDialogImpl/0.27.1920.1053@0.27.1920.1053" timestamp="1577201476283" />
     <state x="662" y="270" width="585" height="573" key="MultipleFileMergeDialog" timestamp="1576460594622">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
@@ -325,10 +320,10 @@
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
     <state x="576" y="265" width="758" height="583" key="RollbackChangesDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1576430590545" />
-    <state x="441" y="188" width="1037" height="737" key="SettingsEditor" timestamp="1575638312077">
+    <state x="431" y="168" width="1037" height="737" key="SettingsEditor" timestamp="1577201863713">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
-    <state x="441" y="188" width="1037" height="737" key="SettingsEditor/0.27.1920.1053@0.27.1920.1053" timestamp="1575638312077" />
+    <state x="431" y="168" width="1037" height="737" key="SettingsEditor/0.27.1920.1053@0.27.1920.1053" timestamp="1577201863713" />
     <state x="555" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1576460573188">
       <screen x="0" y="27" width="1920" height="1053" />
     </state>
