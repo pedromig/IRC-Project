@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <pthread.h>
 #include <sodium.h>
+#include <signal.h>
 //My header files
 #include "ircproxy.h"
 #include "../Functions/functions.h"

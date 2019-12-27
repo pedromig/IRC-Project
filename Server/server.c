@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <semaphore.h>
+#include <signal.h>
 #include <sys/stat.h>
 // My header files
 #include "server.h"
